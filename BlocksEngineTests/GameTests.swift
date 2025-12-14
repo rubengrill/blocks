@@ -5,7 +5,7 @@
 //  Created by Ruben Grill on 09.03.23.
 //
 
-import XCTest
+import Testing
 
 @testable import BlocksEngine
 
@@ -81,7 +81,8 @@ private final class GameEvents: GameDelegate {
 }
 
 @MainActor
-final class GameTests: XCTestCase {
+@Suite
+struct GameTests {
 
     private lazy var gameEvents = GameEvents()
     private lazy var game: Game = {
@@ -91,15 +92,17 @@ final class GameTests: XCTestCase {
         return result
     }()
 
-    func testNewBlockIsPositionedAtCenterTopEnteringWithFirstRow() {
+    @Test
+    mutating func testNewBlockIsPositionedAtCenterTopEnteringWithFirstRow() {
         game.next()
 
-        XCTAssertEqual(game.board.current?.x, 0)
-        XCTAssertEqual(game.board.current?.y, -2)
-        XCTAssertFalse(game.isOver)
+        #expect(game.board.current?.x == 0)
+        #expect(game.board.current?.y == -2)
+        #expect(!game.isOver)
     }
 
-    func testGameIsOverIfNewBlockCannotEnterBoard() {
+    @Test
+    mutating func testGameIsOverIfNewBlockCannotEnterBoard() {
         game.board.data = Array(Bricks([
             [0, 1, 1, 0],
             [0, 1, 1, 0],
@@ -109,9 +112,9 @@ final class GameTests: XCTestCase {
 
         game.next()
 
-        XCTAssertNil(game.board.current)
-        XCTAssertTrue(game.isOver)
-        XCTAssertEqual(Bricks(game.board.data), Bricks([
+        #expect(game.board.current == nil)
+        #expect(game.isOver)
+        #expect(Bricks(game.board.data) == Bricks([
             [0, 1, 1, 0],
             [0, 1, 1, 0],
             [0, 1, 1, 0],
@@ -126,9 +129,9 @@ final class GameTests: XCTestCase {
         game.moveToBottom()
         game.rotateClockwise()
 
-        XCTAssertNil(game.board.current)
-        XCTAssertTrue(game.isOver)
-        XCTAssertEqual(Bricks(game.board.data), Bricks([
+        #expect(game.board.current == nil)
+        #expect(game.isOver)
+        #expect(Bricks(game.board.data) == Bricks([
             [0, 1, 1, 0],
             [0, 1, 1, 0],
             [0, 1, 1, 0],
@@ -136,7 +139,8 @@ final class GameTests: XCTestCase {
         ]))
     }
 
-    func testGameIsOverIfBlockCannotEnterFully() {
+    @Test
+    mutating func testGameIsOverIfBlockCannotEnterFully() {
         game.board.data = Array(Bricks([
             [0, 0, 0, 0],
             [1, 1, 0, 0],
@@ -146,15 +150,15 @@ final class GameTests: XCTestCase {
 
         game.next()
 
-        XCTAssertEqual(game.board.current?.x, 0)
-        XCTAssertEqual(game.board.current?.y, -2)
-        XCTAssertFalse(game.isOver)
+        #expect(game.board.current?.x == 0)
+        #expect(game.board.current?.y == -2)
+        #expect(!game.isOver)
 
         game.next() // Player had time until now to move the entering block
 
-        XCTAssertNil(game.board.current)
-        XCTAssertTrue(game.isOver)
-        XCTAssertEqual(Bricks(game.board.data), Bricks([
+        #expect(game.board.current == nil)
+        #expect(game.isOver)
+        #expect(Bricks(game.board.data) == Bricks([
             [0, 1, 1, 0],
             [1, 1, 0, 0],
             [1, 1, 0, 0],
@@ -162,7 +166,8 @@ final class GameTests: XCTestCase {
         ]))
     }
 
-    func testGameIsOverIfBlockCannotEnterFullyWithMoveToBottom() {
+    @Test
+    mutating func testGameIsOverIfBlockCannotEnterFullyWithMoveToBottom() {
         game.board.data = Array(Bricks([
             [0, 0, 0, 0],
             [1, 1, 0, 0],
@@ -172,13 +177,13 @@ final class GameTests: XCTestCase {
 
         game.next()
 
-        XCTAssertFalse(game.isOver)
+        #expect(!game.isOver)
 
         game.moveToBottom()
 
-        XCTAssertNil(game.board.current)
-        XCTAssertTrue(game.isOver)
-        XCTAssertEqual(Bricks(game.board.data), Bricks([
+        #expect(game.board.current == nil)
+        #expect(game.isOver)
+        #expect(Bricks(game.board.data) == Bricks([
             [0, 1, 1, 0],
             [1, 1, 0, 0],
             [1, 1, 0, 0],
@@ -186,7 +191,8 @@ final class GameTests: XCTestCase {
         ]))
     }
 
-    func testGameIsOverIfBlockCannotEnterFullyAndCannotMoveHorizontally() {
+    @Test
+    mutating func testGameIsOverIfBlockCannotEnterFullyAndCannotMoveHorizontally() {
         game.board.data = Array(Bricks([
             [1, 0, 0, 1],
             [1, 1, 0, 1],
@@ -196,9 +202,9 @@ final class GameTests: XCTestCase {
 
         game.next()
 
-        XCTAssertNil(game.board.current)
-        XCTAssertTrue(game.isOver)
-        XCTAssertEqual(Bricks(game.board.data), Bricks([
+        #expect(game.board.current == nil)
+        #expect(game.isOver)
+        #expect(Bricks(game.board.data) == Bricks([
             [1, 1, 1, 1],
             [1, 1, 0, 1],
             [0, 1, 1, 1],
@@ -206,7 +212,8 @@ final class GameTests: XCTestCase {
         ]))
     }
 
-    func testMovingPossibleWhileBlockBoundsAtFilledSpace() {
+    @Test
+    mutating func testMovingPossibleWhileBlockBoundsAtFilledSpace() {
         game.board.data = Array(Bricks([
             [0, 0, 0, 0],
             [1, 1, 0, 0],
@@ -218,26 +225,27 @@ final class GameTests: XCTestCase {
         game.moveRight()
         game.next()
 
-        XCTAssertEqual(game.board.current?.x, 1)
-        XCTAssertEqual(game.board.current?.y, -1)
-        XCTAssertFalse(game.isOver)
+        #expect(game.board.current?.x == 1)
+        #expect(game.board.current?.y == -1)
+        #expect(!game.isOver)
     }
 
-    func testMovingPossibleWhileBlockBoundsAtBottom() {
+    @Test
+    mutating func testMovingPossibleWhileBlockBoundsAtBottom() {
         game.next()
         game.next()
         game.next()
         game.next()
 
-        XCTAssertEqual(game.board.current?.x, 0)
-        XCTAssertEqual(game.board.current?.y, 1)
-        XCTAssertFalse(game.isOver)
+        #expect(game.board.current?.x == 0)
+        #expect(game.board.current?.y == 1)
+        #expect(!game.isOver)
 
         game.moveRight()
         game.next()
 
-        XCTAssertFalse(game.isOver)
-        XCTAssertEqual(Bricks(game.board.data), Bricks([
+        #expect(!game.isOver)
+        #expect(Bricks(game.board.data) == Bricks([
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 1, 1],
@@ -245,7 +253,8 @@ final class GameTests: XCTestCase {
         ]))
     }
 
-    func testClearsFullRowsImmediately() {
+    @Test
+    mutating func testClearsFullRowsImmediately() {
         game.board.data = Array(Bricks([
             [0, 0, 0, 0],
             [1, 1, 0, 0],
@@ -259,8 +268,8 @@ final class GameTests: XCTestCase {
         game.next()
         game.next() // Moving horizontally not possible, can commit & clear immediately
 
-        XCTAssertFalse(game.isOver)
-        XCTAssertEqual(Bricks(game.board.data), Bricks([
+        #expect(!game.isOver)
+        #expect(Bricks(game.board.data) == Bricks([
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0],
@@ -268,12 +277,13 @@ final class GameTests: XCTestCase {
         ]))
     }
 
-    func testMoveToBottom() {
+    @Test
+    mutating func testMoveToBottom() {
         game.next()
         game.moveToBottom()
 
-        XCTAssertFalse(game.isOver)
-        XCTAssertEqual(Bricks(game.board.data), Bricks([
+        #expect(!game.isOver)
+        #expect(Bricks(game.board.data) == Bricks([
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 1, 1, 0],
@@ -281,20 +291,21 @@ final class GameTests: XCTestCase {
         ]))
     }
 
-    func testMoveToBottomCommitsImmediately() {
+    @Test
+    mutating func testMoveToBottomCommitsImmediately() {
         game.next()
         game.next()
         game.next()
         game.next()
 
-        XCTAssertEqual(game.board.current?.x, 0)
-        XCTAssertEqual(game.board.current?.y, 1)
-        XCTAssertFalse(game.isOver)
+        #expect(game.board.current?.x == 0)
+        #expect(game.board.current?.y == 1)
+        #expect(!game.isOver)
 
         game.moveToBottom() // Without moveToBottom, the player could still move the block horizontally
 
-        XCTAssertFalse(game.isOver)
-        XCTAssertEqual(Bricks(game.board.data), Bricks([
+        #expect(!game.isOver)
+        #expect(Bricks(game.board.data) == Bricks([
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 1, 1, 0],
@@ -302,7 +313,8 @@ final class GameTests: XCTestCase {
         ]))
     }
 
-    func testMoveToBottomClearsFullRowsImmediately() {
+    @Test
+    mutating func testMoveToBottomClearsFullRowsImmediately() {
         game.board.data = Array(Bricks([
             [0, 0, 0, 0],
             [1, 0, 0, 1],
@@ -313,8 +325,8 @@ final class GameTests: XCTestCase {
         game.next()
         game.moveToBottom()
 
-        XCTAssertFalse(game.isOver)
-        XCTAssertEqual(Bricks(game.board.data), Bricks([
+        #expect(!game.isOver)
+        #expect(Bricks(game.board.data) == Bricks([
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0],
@@ -322,43 +334,47 @@ final class GameTests: XCTestCase {
         ]))
     }
 
-    func testMoveDown() {
+    @Test
+    mutating func testMoveDown() {
         game.next()
 
         for _ in 1...10 {
             game.moveDown() // Once block can't move down anymore, it has no effect
         }
 
-        XCTAssertEqual(game.board.current?.x, 0)
-        XCTAssertEqual(game.board.current?.y, 1)
-        XCTAssertFalse(game.isOver)
+        #expect(game.board.current?.x == 0)
+        #expect(game.board.current?.y == 1)
+        #expect(!game.isOver)
     }
 
-    func testMoveLeft() {
+    @Test
+    mutating func testMoveLeft() {
         game.next()
 
         for _ in 1...10 {
             game.moveLeft() // Once block can't move left anymore, it has no effect
         }
 
-        XCTAssertEqual(game.board.current?.x, -1)
-        XCTAssertEqual(game.board.current?.y, -2)
-        XCTAssertFalse(game.isOver)
+        #expect(game.board.current?.x == -1)
+        #expect(game.board.current?.y == -2)
+        #expect(!game.isOver)
     }
 
-    func testMoveRight() {
+    @Test
+    mutating func testMoveRight() {
         game.next()
 
         for _ in 1...10 {
             game.moveRight() // Once block can't move right anymore, it has no effect
         }
 
-        XCTAssertEqual(game.board.current?.x, 1)
-        XCTAssertEqual(game.board.current?.y, -2)
-        XCTAssertFalse(game.isOver)
+        #expect(game.board.current?.x == 1)
+        #expect(game.board.current?.y == -2)
+        #expect(!game.isOver)
     }
 
-    func testRotateClockwise() throws {
+    @Test
+    mutating func testRotateClockwise() throws {
         let blockShape = BlockShape(blockForm: .L, data: [
             [0, 1, 0],
             [0, 1, 0],
@@ -368,7 +384,7 @@ final class GameTests: XCTestCase {
 
         game.next()
 
-        XCTAssertEqual(Bricks(try XCTUnwrap(game.board.current).block.data), Bricks([
+        #expect(Bricks(try #require(game.board.current).block.data) == Bricks([
             [0, 1, 0],
             [0, 1, 0],
             [0, 1, 1],
@@ -376,7 +392,7 @@ final class GameTests: XCTestCase {
 
         game.rotateClockwise()
 
-        XCTAssertEqual(Bricks(try XCTUnwrap(game.board.current).block.data), Bricks([
+        #expect(Bricks(try #require(game.board.current).block.data) == Bricks([
             [0, 0, 0],
             [1, 1, 1],
             [1, 0, 0],
@@ -384,7 +400,7 @@ final class GameTests: XCTestCase {
 
         game.rotateClockwise()
 
-        XCTAssertEqual(Bricks(try XCTUnwrap(game.board.current).block.data), Bricks([
+        #expect(Bricks(try #require(game.board.current).block.data) == Bricks([
             [1, 1, 0],
             [0, 1, 0],
             [0, 1, 0],
@@ -392,7 +408,7 @@ final class GameTests: XCTestCase {
 
         game.rotateClockwise()
 
-        XCTAssertEqual(Bricks(try XCTUnwrap(game.board.current).block.data), Bricks([
+        #expect(Bricks(try #require(game.board.current).block.data) == Bricks([
             [0, 0, 1],
             [1, 1, 1],
             [0, 0, 0],
@@ -400,14 +416,15 @@ final class GameTests: XCTestCase {
 
         game.rotateClockwise()
 
-        XCTAssertEqual(Bricks(try XCTUnwrap(game.board.current).block.data), Bricks([
+        #expect(Bricks(try #require(game.board.current).block.data) == Bricks([
             [0, 1, 0],
             [0, 1, 0],
             [0, 1, 1],
         ]))
     }
 
-    func testRotateClockwiseMovesHorizontallyToSucceed() {
+    @Test
+    mutating func testRotateClockwiseMovesHorizontallyToSucceed() {
         let blockShape = BlockShape(blockForm: .L, data: [
             [0, 1, 0],
             [0, 1, 0],
@@ -425,18 +442,18 @@ final class GameTests: XCTestCase {
         game.next()
         game.next()
 
-        XCTAssertEqual(game.board.current?.x, 0)
-        XCTAssertEqual(game.board.current?.y, 0)
+        #expect(game.board.current?.x == 0)
+        #expect(game.board.current?.y == 0)
 
         game.rotateClockwise()
 
-        XCTAssertEqual(game.board.current?.x, 1)
-        XCTAssertEqual(game.board.current?.y, 0)
+        #expect(game.board.current?.x == 1)
+        #expect(game.board.current?.y == 0)
 
         game.rotateClockwise()
 
-        XCTAssertEqual(game.board.current?.x, 1)
-        XCTAssertEqual(game.board.current?.y, 0)
+        #expect(game.board.current?.x == 1)
+        #expect(game.board.current?.y == 0)
 
         game.board.data = Array(Bricks([
             [0, 0, 0, 1],
@@ -447,27 +464,29 @@ final class GameTests: XCTestCase {
 
         game.rotateClockwise()
 
-        XCTAssertEqual(game.board.current?.x, 0)
-        XCTAssertEqual(game.board.current?.y, 0)
+        #expect(game.board.current?.x == 0)
+        #expect(game.board.current?.y == 0)
     }
 
-    func testBlocksAreRandom() throws {
+    @Test
+    mutating func testBlocksAreRandom() throws {
         var blockShapes = Set<ObjectIdentifier>()
         var blockRotations = Set<BlockRotation>()
 
         for _ in 1 ... 10 {
             let game = Game(columns: 4, rows: 4)
             game.next()
-            let boardBlock = try XCTUnwrap(game.board.current)
+            let boardBlock = try #require(game.board.current)
             blockShapes.insert(ObjectIdentifier(boardBlock.blockShape.blockClockwise0))
             blockRotations.insert(boardBlock.blockRotation)
         }
 
-        XCTAssertTrue(blockShapes.count > 1)
-        XCTAssertTrue(blockRotations.count > 1)
+        #expect(blockShapes.count > 1)
+        #expect(blockRotations.count > 1)
     }
 
-    func testDelegate() throws {
+    @Test
+    mutating func testDelegate() throws {
         game.board.data = Array(Bricks([
             [0, 0, 0, 0],
             [0, 0, 0, 0],
@@ -475,95 +494,95 @@ final class GameTests: XCTestCase {
             [0, 0, 1, 1],
         ]))
 
-        XCTAssertEqual(gameEvents.count, 0)
+        #expect(gameEvents.count == 0)
 
         game.next()
 
-        let firstBoardBlock = try XCTUnwrap(game.board.current)
+        let firstBoardBlock = try #require(game.board.current)
 
-        XCTAssertEqual(gameEvents.count, 2)
-        XCTAssertNotNil(gameEvents[0]?.newBlockAction)
-        XCTAssertEqual(gameEvents[0]?.newBlockAction?.boardBlock.id, firstBoardBlock.id)
-        XCTAssertEqual(gameEvents[0]?.newBlockAction?.boardBlock.x, 0)
-        XCTAssertEqual(gameEvents[0]?.newBlockAction?.boardBlock.y, -3)
-        XCTAssertNotNil(gameEvents[1]?.moveBlockAction)
-        XCTAssertEqual(gameEvents[1]?.moveBlockAction?.boardBlock.id, firstBoardBlock.id)
-        XCTAssertEqual(gameEvents[1]?.moveBlockAction?.boardBlock.x, 0)
-        XCTAssertEqual(gameEvents[1]?.moveBlockAction?.boardBlock.y, -2)
-        XCTAssertEqual(gameEvents[1]?.moveBlockAction?.movedToBottom, false)
-        XCTAssertEqual(gameEvents[1]?.moveBlockAction?.movedByGame, true)
-        XCTAssertEqual(gameEvents[1]?.moveBlockAction?.expectCommitAndClearFullRows, false)
+        #expect(gameEvents.count == 2)
+        #expect(gameEvents[0]?.newBlockAction != nil)
+        #expect(gameEvents[0]?.newBlockAction?.boardBlock.id == firstBoardBlock.id)
+        #expect(gameEvents[0]?.newBlockAction?.boardBlock.x == 0)
+        #expect(gameEvents[0]?.newBlockAction?.boardBlock.y == -3)
+        #expect(gameEvents[1]?.moveBlockAction != nil)
+        #expect(gameEvents[1]?.moveBlockAction?.boardBlock.id == firstBoardBlock.id)
+        #expect(gameEvents[1]?.moveBlockAction?.boardBlock.x == 0)
+        #expect(gameEvents[1]?.moveBlockAction?.boardBlock.y == -2)
+        #expect(gameEvents[1]?.moveBlockAction?.movedToBottom == false)
+        #expect(gameEvents[1]?.moveBlockAction?.movedByGame == true)
+        #expect(gameEvents[1]?.moveBlockAction?.expectCommitAndClearFullRows == false)
 
         game.next()
 
-        XCTAssertEqual(gameEvents.count, 3)
-        XCTAssertNotNil(gameEvents[2]?.moveBlockAction)
-        XCTAssertEqual(gameEvents[2]?.moveBlockAction?.boardBlock.id, firstBoardBlock.id)
-        XCTAssertEqual(gameEvents[2]?.moveBlockAction?.boardBlock.x, 0)
-        XCTAssertEqual(gameEvents[2]?.moveBlockAction?.boardBlock.y, -1)
-        XCTAssertEqual(gameEvents[2]?.moveBlockAction?.movedToBottom, false)
-        XCTAssertEqual(gameEvents[2]?.moveBlockAction?.movedByGame, true)
-        XCTAssertEqual(gameEvents[2]?.moveBlockAction?.expectCommitAndClearFullRows, false)
+        #expect(gameEvents.count == 3)
+        #expect(gameEvents[2]?.moveBlockAction != nil)
+        #expect(gameEvents[2]?.moveBlockAction?.boardBlock.id == firstBoardBlock.id)
+        #expect(gameEvents[2]?.moveBlockAction?.boardBlock.x == 0)
+        #expect(gameEvents[2]?.moveBlockAction?.boardBlock.y == -1)
+        #expect(gameEvents[2]?.moveBlockAction?.movedToBottom == false)
+        #expect(gameEvents[2]?.moveBlockAction?.movedByGame == true)
+        #expect(gameEvents[2]?.moveBlockAction?.expectCommitAndClearFullRows == false)
 
         game.moveLeft()
 
-        XCTAssertEqual(gameEvents.count, 4)
-        XCTAssertNotNil(gameEvents[3]?.moveBlockAction)
-        XCTAssertEqual(gameEvents[3]?.moveBlockAction?.boardBlock.id, firstBoardBlock.id)
-        XCTAssertEqual(gameEvents[3]?.moveBlockAction?.boardBlock.x, -1)
-        XCTAssertEqual(gameEvents[3]?.moveBlockAction?.boardBlock.y, -1)
-        XCTAssertEqual(gameEvents[3]?.moveBlockAction?.movedToBottom, false)
-        XCTAssertEqual(gameEvents[3]?.moveBlockAction?.movedByGame, false)
-        XCTAssertEqual(gameEvents[3]?.moveBlockAction?.expectCommitAndClearFullRows, false)
+        #expect(gameEvents.count == 4)
+        #expect(gameEvents[3]?.moveBlockAction != nil)
+        #expect(gameEvents[3]?.moveBlockAction?.boardBlock.id == firstBoardBlock.id)
+        #expect(gameEvents[3]?.moveBlockAction?.boardBlock.x == -1)
+        #expect(gameEvents[3]?.moveBlockAction?.boardBlock.y == -1)
+        #expect(gameEvents[3]?.moveBlockAction?.movedToBottom == false)
+        #expect(gameEvents[3]?.moveBlockAction?.movedByGame == false)
+        #expect(gameEvents[3]?.moveBlockAction?.expectCommitAndClearFullRows == false)
 
         game.moveLeft() // move left not possible
 
-        XCTAssertEqual(gameEvents.count, 4)
+        #expect(gameEvents.count == 4)
 
         game.moveDown()
 
-        XCTAssertEqual(gameEvents.count, 5)
-        XCTAssertNotNil(gameEvents[4]?.moveBlockAction)
-        XCTAssertEqual(gameEvents[4]?.moveBlockAction?.boardBlock.id, firstBoardBlock.id)
-        XCTAssertEqual(gameEvents[4]?.moveBlockAction?.boardBlock.x, -1)
-        XCTAssertEqual(gameEvents[4]?.moveBlockAction?.boardBlock.y, 0)
-        XCTAssertEqual(gameEvents[4]?.moveBlockAction?.movedToBottom, false)
-        XCTAssertEqual(gameEvents[4]?.moveBlockAction?.movedByGame, false)
-        XCTAssertEqual(gameEvents[4]?.moveBlockAction?.expectCommitAndClearFullRows, false)
+        #expect(gameEvents.count == 5)
+        #expect(gameEvents[4]?.moveBlockAction != nil)
+        #expect(gameEvents[4]?.moveBlockAction?.boardBlock.id == firstBoardBlock.id)
+        #expect(gameEvents[4]?.moveBlockAction?.boardBlock.x == -1)
+        #expect(gameEvents[4]?.moveBlockAction?.boardBlock.y == 0)
+        #expect(gameEvents[4]?.moveBlockAction?.movedToBottom == false)
+        #expect(gameEvents[4]?.moveBlockAction?.movedByGame == false)
+        #expect(gameEvents[4]?.moveBlockAction?.expectCommitAndClearFullRows == false)
 
         game.rotateClockwise()
 
-        XCTAssertEqual(gameEvents.count, 6)
-        XCTAssertNotNil(gameEvents[5]?.moveBlockAction)
-        XCTAssertEqual(gameEvents[5]?.moveBlockAction?.boardBlock.id, firstBoardBlock.id)
-        XCTAssertEqual(gameEvents[5]?.moveBlockAction?.boardBlock.x, -1)
-        XCTAssertEqual(gameEvents[5]?.moveBlockAction?.boardBlock.y, 0)
-        XCTAssertEqual(gameEvents[5]?.moveBlockAction?.boardBlock.blockRotation, .clockwise90)
-        XCTAssertEqual(gameEvents[5]?.moveBlockAction?.movedToBottom, false)
-        XCTAssertEqual(gameEvents[5]?.moveBlockAction?.movedByGame, false)
-        XCTAssertEqual(gameEvents[5]?.moveBlockAction?.expectCommitAndClearFullRows, false)
+        #expect(gameEvents.count == 6)
+        #expect(gameEvents[5]?.moveBlockAction != nil)
+        #expect(gameEvents[5]?.moveBlockAction?.boardBlock.id == firstBoardBlock.id)
+        #expect(gameEvents[5]?.moveBlockAction?.boardBlock.x == -1)
+        #expect(gameEvents[5]?.moveBlockAction?.boardBlock.y == 0)
+        #expect(gameEvents[5]?.moveBlockAction?.boardBlock.blockRotation == .clockwise90)
+        #expect(gameEvents[5]?.moveBlockAction?.movedToBottom == false)
+        #expect(gameEvents[5]?.moveBlockAction?.movedByGame == false)
+        #expect(gameEvents[5]?.moveBlockAction?.expectCommitAndClearFullRows == false)
 
         game.moveDown()
 
-        XCTAssertEqual(gameEvents.count, 9)
-        XCTAssertNotNil(gameEvents[6]?.moveBlockAction)
-        XCTAssertEqual(gameEvents[6]?.moveBlockAction?.boardBlock.id, firstBoardBlock.id)
-        XCTAssertEqual(gameEvents[6]?.moveBlockAction?.boardBlock.x, -1)
-        XCTAssertEqual(gameEvents[6]?.moveBlockAction?.boardBlock.y, 1)
-        XCTAssertEqual(gameEvents[6]?.moveBlockAction?.movedToBottom, false)
-        XCTAssertEqual(gameEvents[6]?.moveBlockAction?.movedByGame, false)
-        XCTAssertEqual(gameEvents[6]?.moveBlockAction?.expectCommitAndClearFullRows, true)
-        XCTAssertNotNil(gameEvents[7]?.commitBlockAction)
-        XCTAssertEqual(gameEvents[7]?.commitBlockAction?.boardBlock.id, firstBoardBlock.id)
-        XCTAssertEqual(gameEvents[7]?.commitBlockAction?.boardBlock.x, -1)
-        XCTAssertEqual(gameEvents[7]?.commitBlockAction?.boardBlock.y, 1)
-        XCTAssertNotNil(gameEvents[8]?.clearFullRowsAction)
-        XCTAssertEqual(gameEvents[8]?.clearFullRowsAction?.fullRows, [3])
+        #expect(gameEvents.count == 9)
+        #expect(gameEvents[6]?.moveBlockAction != nil)
+        #expect(gameEvents[6]?.moveBlockAction?.boardBlock.id == firstBoardBlock.id)
+        #expect(gameEvents[6]?.moveBlockAction?.boardBlock.x == -1)
+        #expect(gameEvents[6]?.moveBlockAction?.boardBlock.y == 1)
+        #expect(gameEvents[6]?.moveBlockAction?.movedToBottom == false)
+        #expect(gameEvents[6]?.moveBlockAction?.movedByGame == false)
+        #expect(gameEvents[6]?.moveBlockAction?.expectCommitAndClearFullRows == true)
+        #expect(gameEvents[7]?.commitBlockAction != nil)
+        #expect(gameEvents[7]?.commitBlockAction?.boardBlock.id == firstBoardBlock.id)
+        #expect(gameEvents[7]?.commitBlockAction?.boardBlock.x == -1)
+        #expect(gameEvents[7]?.commitBlockAction?.boardBlock.y == 1)
+        #expect(gameEvents[8]?.clearFullRowsAction != nil)
+        #expect(gameEvents[8]?.clearFullRowsAction?.fullRows == [3])
 
         game.moveDown() // move down not possible
 
-        XCTAssertEqual(gameEvents.count, 9)
-        XCTAssertEqual(Bricks(game.board.data), Bricks([
+        #expect(gameEvents.count == 9)
+        #expect(Bricks(game.board.data) == Bricks([
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0],
@@ -572,85 +591,87 @@ final class GameTests: XCTestCase {
 
         game.next()
 
-        let secondBoardBlock = try XCTUnwrap(game.board.current)
+        let secondBoardBlock = try #require(game.board.current)
 
-        XCTAssertNotEqual(firstBoardBlock.id, secondBoardBlock.id)
-        XCTAssertEqual(gameEvents.count, 11)
-        XCTAssertNotNil(gameEvents[9]?.newBlockAction)
-        XCTAssertEqual(gameEvents[9]?.newBlockAction?.boardBlock.id, secondBoardBlock.id)
-        XCTAssertEqual(gameEvents[9]?.newBlockAction?.boardBlock.x, 0)
-        XCTAssertEqual(gameEvents[9]?.newBlockAction?.boardBlock.y, -3)
-        XCTAssertNotNil(gameEvents[10]?.moveBlockAction)
-        XCTAssertEqual(gameEvents[10]?.moveBlockAction?.boardBlock.id, secondBoardBlock.id)
-        XCTAssertEqual(gameEvents[10]?.moveBlockAction?.boardBlock.x, 0)
-        XCTAssertEqual(gameEvents[10]?.moveBlockAction?.boardBlock.y, -2)
-        XCTAssertEqual(gameEvents[10]?.moveBlockAction?.movedToBottom, false)
-        XCTAssertEqual(gameEvents[10]?.moveBlockAction?.movedByGame, true)
-        XCTAssertEqual(gameEvents[10]?.moveBlockAction?.expectCommitAndClearFullRows, false)
+        #expect(firstBoardBlock.id != secondBoardBlock.id)
+        #expect(gameEvents.count == 11)
+        #expect(gameEvents[9]?.newBlockAction != nil)
+        #expect(gameEvents[9]?.newBlockAction?.boardBlock.id == secondBoardBlock.id)
+        #expect(gameEvents[9]?.newBlockAction?.boardBlock.x == 0)
+        #expect(gameEvents[9]?.newBlockAction?.boardBlock.y == -3)
+        #expect(gameEvents[10]?.moveBlockAction != nil)
+        #expect(gameEvents[10]?.moveBlockAction?.boardBlock.id == secondBoardBlock.id)
+        #expect(gameEvents[10]?.moveBlockAction?.boardBlock.x == 0)
+        #expect(gameEvents[10]?.moveBlockAction?.boardBlock.y == -2)
+        #expect(gameEvents[10]?.moveBlockAction?.movedToBottom == false)
+        #expect(gameEvents[10]?.moveBlockAction?.movedByGame == true)
+        #expect(gameEvents[10]?.moveBlockAction?.expectCommitAndClearFullRows == false)
 
         game.moveRight()
 
-        XCTAssertEqual(gameEvents.count, 12)
-        XCTAssertNotNil(gameEvents[11]?.moveBlockAction)
-        XCTAssertEqual(gameEvents[11]?.moveBlockAction?.boardBlock.id, secondBoardBlock.id)
-        XCTAssertEqual(gameEvents[11]?.moveBlockAction?.boardBlock.x, 1)
-        XCTAssertEqual(gameEvents[11]?.moveBlockAction?.boardBlock.y, -2)
-        XCTAssertEqual(gameEvents[11]?.moveBlockAction?.movedToBottom, false)
-        XCTAssertEqual(gameEvents[11]?.moveBlockAction?.movedByGame, false)
-        XCTAssertEqual(gameEvents[11]?.moveBlockAction?.expectCommitAndClearFullRows, false)
+        #expect(gameEvents.count == 12)
+        #expect(gameEvents[11]?.moveBlockAction != nil)
+        #expect(gameEvents[11]?.moveBlockAction?.boardBlock.id == secondBoardBlock.id)
+        #expect(gameEvents[11]?.moveBlockAction?.boardBlock.x == 1)
+        #expect(gameEvents[11]?.moveBlockAction?.boardBlock.y == -2)
+        #expect(gameEvents[11]?.moveBlockAction?.movedToBottom == false)
+        #expect(gameEvents[11]?.moveBlockAction?.movedByGame == false)
+        #expect(gameEvents[11]?.moveBlockAction?.expectCommitAndClearFullRows == false)
 
         game.moveRight() // move right not possible
 
-        XCTAssertEqual(gameEvents.count, 12)
+        #expect(gameEvents.count == 12)
 
         game.moveToBottom()
 
-        XCTAssertEqual(gameEvents.count, 15)
-        XCTAssertNotNil(gameEvents[12]?.moveBlockAction)
-        XCTAssertEqual(gameEvents[12]?.moveBlockAction?.boardBlock.id, secondBoardBlock.id)
-        XCTAssertEqual(gameEvents[12]?.moveBlockAction?.boardBlock.x, 1)
-        XCTAssertEqual(gameEvents[12]?.moveBlockAction?.boardBlock.y, 1)
-        XCTAssertEqual(gameEvents[12]?.moveBlockAction?.movedToBottom, true)
-        XCTAssertEqual(gameEvents[12]?.moveBlockAction?.movedByGame, false)
-        XCTAssertEqual(gameEvents[12]?.moveBlockAction?.expectCommitAndClearFullRows, true)
-        XCTAssertNotNil(gameEvents[13]?.commitBlockAction)
-        XCTAssertEqual(gameEvents[13]?.commitBlockAction?.boardBlock.id, secondBoardBlock.id)
-        XCTAssertEqual(gameEvents[13]?.commitBlockAction?.boardBlock.x, 1)
-        XCTAssertEqual(gameEvents[13]?.commitBlockAction?.boardBlock.y, 1)
-        XCTAssertNotNil(gameEvents[14]?.clearFullRowsAction)
-        XCTAssertEqual(gameEvents[14]?.clearFullRowsAction?.fullRows, [3])
+        #expect(gameEvents.count == 15)
+        #expect(gameEvents[12]?.moveBlockAction != nil)
+        #expect(gameEvents[12]?.moveBlockAction?.boardBlock.id == secondBoardBlock.id)
+        #expect(gameEvents[12]?.moveBlockAction?.boardBlock.x == 1)
+        #expect(gameEvents[12]?.moveBlockAction?.boardBlock.y == 1)
+        #expect(gameEvents[12]?.moveBlockAction?.movedToBottom == true)
+        #expect(gameEvents[12]?.moveBlockAction?.movedByGame == false)
+        #expect(gameEvents[12]?.moveBlockAction?.expectCommitAndClearFullRows == true)
+        #expect(gameEvents[13]?.commitBlockAction != nil)
+        #expect(gameEvents[13]?.commitBlockAction?.boardBlock.id == secondBoardBlock.id)
+        #expect(gameEvents[13]?.commitBlockAction?.boardBlock.x == 1)
+        #expect(gameEvents[13]?.commitBlockAction?.boardBlock.y == 1)
+        #expect(gameEvents[14]?.clearFullRowsAction != nil)
+        #expect(gameEvents[14]?.clearFullRowsAction?.fullRows == [3])
     }
 
     // When only using the Game API, clear full rows happens always when the block moves down.
     // But when using the Board API directly, edge cases are possible,
     // where clear full rows need to happen without movement.
-    func testClearFullRowsEdgeCases() throws {
-        for gameMethod in [game.next, game.moveToBottom] {
-            game.board.data = Array(Bricks([
-                [0, 0, 0, 0],
-                [1, 1, 0, 0],
-                [1, 1, 0, 0],
-                [1, 1, 0, 0],
-            ]))
+    @Test(arguments: [
+        { @MainActor (game: Game) -> Void in game.next() },
+        { @MainActor (game: Game) -> Void in game.moveToBottom() },
+    ])
+    mutating func testClearFullRowsEdgeCases(_ gameMethod: @MainActor (Game) -> Void) throws {
+        game.board.data = Array(Bricks([
+            [0, 0, 0, 0],
+            [1, 1, 0, 0],
+            [1, 1, 0, 0],
+            [1, 1, 0, 0],
+        ]))
 
-            game.next()
+        game.next()
 
-            var boardBlock = try XCTUnwrap(game.board.current)
-            boardBlock.x = 1
-            boardBlock.y = 1
-            try game.board.updateCurrentBoardBlock(boardBlock)
+        var boardBlock = try #require(game.board.current)
+        boardBlock.x = 1
+        boardBlock.y = 1
+        try game.board.updateCurrentBoardBlock(boardBlock)
 
-            gameMethod()
+        gameMethod(game)
 
-            XCTAssertNil(game.board.current)
-            XCTAssertFalse(game.isOver)
-            XCTAssertEqual(Bricks(game.board.data), Bricks([
-                [0, 0, 0, 0],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0],
-                [1, 1, 0, 0],
-            ]))
-        }
+        #expect(game.board.current == nil)
+        #expect(!game.isOver)
+        #expect(Bricks(game.board.data) == Bricks([
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [1, 1, 0, 0],
+        ]))
     }
 
 }

@@ -5,7 +5,7 @@
 //  Created by Ruben Grill on 01.03.23.
 //
 
-import XCTest
+import Testing
 
 @testable import BlocksEngine
 
@@ -17,107 +17,118 @@ private let blockShape = BlockShape(blockForm: .O, data: [
 ])
 
 @MainActor
-final class BoardTests: XCTestCase {
+@Suite
+struct BoardTests {
 
     let board = Board(columns: 4, rows: 4)
 
+    @Test
     func testBlockInsideFits() throws {
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: 0))
 
-        XCTAssertFalse(board.isOver)
-        XCTAssertFalse(board.canCommit)
-        XCTAssertTrue(board.canMoveLeft)
-        XCTAssertTrue(board.canMoveRight)
-        XCTAssertTrue(board.canMoveHorizontally)
+        #expect(!board.isOver)
+        #expect(!board.canCommit)
+        #expect(board.canMoveLeft)
+        #expect(board.canMoveRight)
+        #expect(board.canMoveHorizontally)
     }
 
+    @Test
     func testBlockOutsideDoesNotFit() {
         for (x, y) in [(-4, 0), (4, 0), (0, -4), (0, 4)] {
-            XCTAssertThrowsError(try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: x, y: y))) { error in
-                XCTAssertEqual(error as? BoardError, BoardError.OutOfBoard)
+            #expect(throws: BoardError.OutOfBoard) {
+                try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: x, y: y))
             }
         }
     }
 
+    @Test
     func testBlockBoundsOutsideDoesNotFit() {
         // On top is missing, because it is allowed to be outside (for entering the board)
         for (x, y) in [(-3, 0), (3, 0), (0, 3)] {
-            XCTAssertThrowsError(try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: x, y: y))) { error in
-                XCTAssertEqual(error as? BoardError, BoardError.OutOfBoard)
+            #expect(throws: BoardError.OutOfBoard) {
+                try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: x, y: y))
             }
         }
     }
 
+    @Test
     func testBlockBoundsHorizontallyPartlyOutsideDoesNotFit() {
         for x in [-2, 2] {
-            XCTAssertThrowsError(try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: x, y: 0))) { error in
-                XCTAssertEqual(error as? BoardError, BoardError.OutOfBoard)
+            #expect(throws: BoardError.OutOfBoard) {
+                try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: x, y: 0))
             }
         }
     }
 
+    @Test
     func testBlockBoundsOnBottomPartlyOutsideDoesNotFit() {
-        XCTAssertThrowsError(try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: 2))) { error in
-            XCTAssertEqual(error as? BoardError, BoardError.OutOfBoard)
+        #expect(throws: BoardError.OutOfBoard) {
+            try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: 2))
         }
     }
 
+    @Test
     func testBlockBoundsOnTopPartlyOutsideFits() throws {
         for y in [-3, -2] {
             try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: y))
 
-            XCTAssertFalse(board.isOver)
-            XCTAssertFalse(board.canCommit)
-            XCTAssertTrue(board.canMoveLeft)
-            XCTAssertTrue(board.canMoveRight)
-            XCTAssertTrue(board.canMoveHorizontally)
+            #expect(!board.isOver)
+            #expect(!board.canCommit)
+            #expect(board.canMoveLeft)
+            #expect(board.canMoveRight)
+            #expect(board.canMoveHorizontally)
         }
     }
 
+    @Test
     func testBlockBoundsHorizontallyInsideFits() throws {
         for x in [-1, 1] {
             try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: x, y: 0))
 
-            XCTAssertFalse(board.isOver)
-            XCTAssertFalse(board.canCommit)
-            XCTAssertEqual(board.canMoveLeft, x == -1 ? false : true)
-            XCTAssertEqual(board.canMoveRight, x == -1 ? true : false)
-            XCTAssertTrue(board.canMoveHorizontally)
+            #expect(!board.isOver)
+            #expect(!board.canCommit)
+            #expect(board.canMoveLeft == (x == -1 ? false : true))
+            #expect(board.canMoveRight == (x == -1 ? true : false))
+            #expect(board.canMoveHorizontally)
         }
     }
 
+    @Test
     func testBlockBoundsVerticallyInsideFits() throws {
         for y in [-1, 1] {
             try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: y))
 
-            XCTAssertFalse(board.isOver)
-            XCTAssertEqual(board.canCommit, y == -1 ? false : true)
-            XCTAssertTrue(board.canMoveLeft)
-            XCTAssertTrue(board.canMoveRight)
-            XCTAssertTrue(board.canMoveHorizontally)
+            #expect(!board.isOver)
+            #expect(board.canCommit == (y == -1 ? false : true))
+            #expect(board.canMoveLeft)
+            #expect(board.canMoveRight)
+            #expect(board.canMoveHorizontally)
         }
     }
 
+    @Test
     func testBlockBoundsAboveBottomCannotBeCommitted() throws {
         for y in -3...0 {
             try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: y))
-            XCTAssertFalse(board.canCommit)
+            #expect(!board.canCommit)
         }
     }
 
+    @Test
     func testBlockBoundsAtBottomCanBeCommitted() throws {
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: 1))
-        XCTAssertTrue(board.canCommit)
+        #expect(board.canCommit)
 
         try board.commitCurrentBoardBlock()
-        XCTAssertNil(board.current)
-        XCTAssertFalse(board.isOver)
-        XCTAssertFalse(board.canCommit)
-        XCTAssertFalse(board.canMoveLeft)
-        XCTAssertFalse(board.canMoveRight)
-        XCTAssertFalse(board.canMoveHorizontally)
-        XCTAssertFalse(board.canClearFullRows)
-        XCTAssertEqual(Bricks(board.data), Bricks([
+        #expect(board.current == nil)
+        #expect(!board.isOver)
+        #expect(!board.canCommit)
+        #expect(!board.canMoveLeft)
+        #expect(!board.canMoveRight)
+        #expect(!board.canMoveHorizontally)
+        #expect(!board.canClearFullRows)
+        #expect(Bricks(board.data) == Bricks([
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 1, 1, 0],
@@ -125,6 +136,7 @@ final class BoardTests: XCTestCase {
         ]))
     }
 
+    @Test
     func testBlockBoundsAboveFilledSpaceCannotBeCommitted() throws {
         board.data = Array(Bricks([
             [0, 0, 0, 0],
@@ -135,10 +147,11 @@ final class BoardTests: XCTestCase {
 
         for y in [-3, -2] {
             try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: y))
-            XCTAssertFalse(board.canCommit)
+            #expect(!board.canCommit)
         }
     }
 
+    @Test
     func testBlockBoundsAtFilledSpaceCanBeCommitted() throws {
         board.data = Array(Bricks([
             [0, 0, 0, 0],
@@ -148,17 +161,17 @@ final class BoardTests: XCTestCase {
         ]))
 
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: -1))
-        XCTAssertTrue(board.canCommit)
+        #expect(board.canCommit)
 
         try board.commitCurrentBoardBlock()
-        XCTAssertNil(board.current)
-        XCTAssertFalse(board.isOver)
-        XCTAssertFalse(board.canCommit)
-        XCTAssertFalse(board.canMoveLeft)
-        XCTAssertFalse(board.canMoveRight)
-        XCTAssertFalse(board.canMoveHorizontally)
-        XCTAssertFalse(board.canClearFullRows)
-        XCTAssertEqual(Bricks(board.data), Bricks([
+        #expect(board.current == nil)
+        #expect(!board.isOver)
+        #expect(!board.canCommit)
+        #expect(!board.canMoveLeft)
+        #expect(!board.canMoveRight)
+        #expect(!board.canMoveHorizontally)
+        #expect(!board.canClearFullRows)
+        #expect(Bricks(board.data) == Bricks([
             [0, 1, 1, 0],
             [0, 1, 1, 0],
             [0, 1, 1, 0],
@@ -166,19 +179,21 @@ final class BoardTests: XCTestCase {
         ]))
     }
 
+    @Test
     func testCommitNotPossibleWhenCurrentBoardBlockIsMissing() throws {
-        XCTAssertThrowsError(try board.commitCurrentBoardBlock()) { error in
-            XCTAssertEqual(error as? BoardError, BoardError.NoCurrentBoardBlock)
+        #expect(throws: BoardError.NoCurrentBoardBlock) {
+            try board.commitCurrentBoardBlock()
         }
 
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: 1))
         try board.commitCurrentBoardBlock()
 
-        XCTAssertThrowsError(try board.commitCurrentBoardBlock()) { error in
-            XCTAssertEqual(error as? BoardError, BoardError.NoCurrentBoardBlock)
+        #expect(throws: BoardError.NoCurrentBoardBlock) {
+            try board.commitCurrentBoardBlock()
         }
     }
 
+    @Test
     func testCommitNotPossibleWhenBoardBlockCanStillMoveDown() throws {
         board.data = Array(Bricks([
             [1, 0, 0, 1],
@@ -189,27 +204,28 @@ final class BoardTests: XCTestCase {
 
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: 0))
 
-        XCTAssertFalse(board.canCommit)
-        XCTAssertThrowsError(try board.commitCurrentBoardBlock()) { error in
-            XCTAssertEqual(error as? BoardError, BoardError.CurrentBoardBlockCanStillMoveDown)
+        #expect(!board.canCommit)
+        #expect(throws: BoardError.CurrentBoardBlockCanStillMoveDown) {
+            try board.commitCurrentBoardBlock()
         }
     }
 
+    @Test
     func testClearFullRows() throws {
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: -1, y: 1))
         try board.commitCurrentBoardBlock()
-        XCTAssertFalse(board.canClearFullRows)
+        #expect(!board.canClearFullRows)
 
         board.clearFullRows() // Should have no effect
 
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 1, y: 1))
-        XCTAssertFalse(board.canClearFullRows)
-        XCTAssertEqual(board.fullRows, [2, 3]) // fullRows gets set already in updateCurrentBoardBlock()
+        #expect(!board.canClearFullRows)
+        #expect(board.fullRows == [2, 3]) // fullRows gets set already in updateCurrentBoardBlock()
 
         try board.commitCurrentBoardBlock()
-        XCTAssertTrue(board.canClearFullRows)
-        XCTAssertEqual(board.fullRows, [2, 3])
-        XCTAssertEqual(Bricks(board.data), Bricks([
+        #expect(board.canClearFullRows)
+        #expect(board.fullRows == [2, 3])
+        #expect(Bricks(board.data) == Bricks([
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [1, 1, 1, 1],
@@ -217,9 +233,9 @@ final class BoardTests: XCTestCase {
         ]))
 
         board.clearFullRows()
-        XCTAssertFalse(board.canClearFullRows)
-        XCTAssertEqual(board.fullRows, [])
-        XCTAssertEqual(Bricks(board.data), Bricks([
+        #expect(!board.canClearFullRows)
+        #expect(board.fullRows.isEmpty)
+        #expect(Bricks(board.data) == Bricks([
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0],
@@ -227,31 +243,33 @@ final class BoardTests: XCTestCase {
         ]))
     }
 
+    @Test
     func testClearFullRowsMustBeCalledAfterCommit() throws {
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: -1, y: 1))
         try board.commitCurrentBoardBlock()
 
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 1, y: 1))
-        XCTAssertFalse(board.canClearFullRows)
-        XCTAssertEqual(board.fullRows, [2, 3]) // fullRows gets set already in updateCurrentBoardBlock()
+        #expect(!board.canClearFullRows)
+        #expect(board.fullRows == [2, 3]) // fullRows gets set already in updateCurrentBoardBlock()
 
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 1, y: 0))
-        XCTAssertFalse(board.canClearFullRows)
-        XCTAssertEqual(board.fullRows, []) // fullRows can get reset again
+        #expect(!board.canClearFullRows)
+        #expect(board.fullRows.isEmpty) // fullRows can get reset again
 
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 1, y: 1))
-        XCTAssertFalse(board.canClearFullRows)
-        XCTAssertEqual(board.fullRows, [2, 3])
+        #expect(!board.canClearFullRows)
+        #expect(board.fullRows == [2, 3])
 
         try board.commitCurrentBoardBlock()
-        XCTAssertTrue(board.canClearFullRows)
-        XCTAssertEqual(board.fullRows, [2, 3])
+        #expect(board.canClearFullRows)
+        #expect(board.fullRows == [2, 3])
 
-        XCTAssertThrowsError(try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 1, y: 0))) { error in
-            XCTAssertEqual(error as? BoardError, BoardError.FullRowsNotCleared)
+        #expect(throws: BoardError.FullRowsNotCleared) {
+            try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 1, y: 0))
         }
     }
 
+    @Test
     func testGameIsOverAfterCommitWhenBlockBoundsEnteredOnlyPartially() throws {
         board.data = Array(Bricks([
             [0, 0, 0, 0],
@@ -261,21 +279,21 @@ final class BoardTests: XCTestCase {
         ]))
 
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: -2))
-        XCTAssertFalse(board.isOver)
-        XCTAssertTrue(board.canCommit)
-        XCTAssertTrue(board.canMoveLeft)
-        XCTAssertTrue(board.canMoveRight)
-        XCTAssertTrue(board.canMoveHorizontally)
-        XCTAssertFalse(board.canClearFullRows)
+        #expect(!board.isOver)
+        #expect(board.canCommit)
+        #expect(board.canMoveLeft)
+        #expect(board.canMoveRight)
+        #expect(board.canMoveHorizontally)
+        #expect(!board.canClearFullRows)
 
         try board.commitCurrentBoardBlock()
-        XCTAssertTrue(board.isOver)
-        XCTAssertFalse(board.canCommit)
-        XCTAssertFalse(board.canMoveLeft)
-        XCTAssertFalse(board.canMoveRight)
-        XCTAssertFalse(board.canMoveHorizontally)
-        XCTAssertFalse(board.canClearFullRows)
-        XCTAssertEqual(Bricks(board.data), Bricks([
+        #expect(board.isOver)
+        #expect(!board.canCommit)
+        #expect(!board.canMoveLeft)
+        #expect(!board.canMoveRight)
+        #expect(!board.canMoveHorizontally)
+        #expect(!board.canClearFullRows)
+        #expect(Bricks(board.data) == Bricks([
             [0, 1, 1, 0],
             [0, 1, 1, 0],
             [0, 1, 1, 0],
@@ -283,6 +301,7 @@ final class BoardTests: XCTestCase {
         ]))
     }
 
+    @Test
     func testGameIsOverAfterCommitWhenBlockBoundsOutside() throws {
         board.data = Array(Bricks([
             [0, 1, 1, 0],
@@ -292,21 +311,21 @@ final class BoardTests: XCTestCase {
         ]))
 
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: -3))
-        XCTAssertFalse(board.isOver)
-        XCTAssertTrue(board.canCommit)
-        XCTAssertTrue(board.canMoveLeft)
-        XCTAssertTrue(board.canMoveRight)
-        XCTAssertTrue(board.canMoveHorizontally)
-        XCTAssertFalse(board.canClearFullRows)
+        #expect(!board.isOver)
+        #expect(board.canCommit)
+        #expect(board.canMoveLeft)
+        #expect(board.canMoveRight)
+        #expect(board.canMoveHorizontally)
+        #expect(!board.canClearFullRows)
 
         try board.commitCurrentBoardBlock()
-        XCTAssertTrue(board.isOver)
-        XCTAssertFalse(board.canCommit)
-        XCTAssertFalse(board.canMoveLeft)
-        XCTAssertFalse(board.canMoveRight)
-        XCTAssertFalse(board.canMoveHorizontally)
-        XCTAssertFalse(board.canClearFullRows)
-        XCTAssertEqual(Bricks(board.data), Bricks([
+        #expect(board.isOver)
+        #expect(!board.canCommit)
+        #expect(!board.canMoveLeft)
+        #expect(!board.canMoveRight)
+        #expect(!board.canMoveHorizontally)
+        #expect(!board.canClearFullRows)
+        #expect(Bricks(board.data) == Bricks([
             [0, 1, 1, 0],
             [0, 1, 1, 0],
             [0, 1, 1, 0],
@@ -314,6 +333,7 @@ final class BoardTests: XCTestCase {
         ]))
     }
 
+    @Test
     func testNoFurtherActionsAllowedWhenGameIsOver() throws {
         board.data = Array(Bricks([
             [1, 0, 1, 1],
@@ -331,28 +351,28 @@ final class BoardTests: XCTestCase {
 
         try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: -1))
         try board.commitCurrentBoardBlock()
-        XCTAssertTrue(board.isOver)
-        XCTAssertFalse(board.canCommit)
-        XCTAssertFalse(board.canMoveLeft)
-        XCTAssertFalse(board.canMoveRight)
-        XCTAssertFalse(board.canMoveHorizontally)
-        XCTAssertFalse(board.canClearFullRows)
+        #expect(board.isOver)
+        #expect(!board.canCommit)
+        #expect(!board.canMoveLeft)
+        #expect(!board.canMoveRight)
+        #expect(!board.canMoveHorizontally)
+        #expect(!board.canClearFullRows)
 
         board.clearFullRows() // Should have no effect
 
-        XCTAssertEqual(Bricks(board.data), Bricks([
+        #expect(Bricks(board.data) == Bricks([
             [1, 1, 1, 1],
             [1, 1, 1, 1],
             [1, 1, 1, 1],
             [1, 1, 0, 1],
         ]))
 
-        XCTAssertThrowsError(try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: -3))) { error in
-            XCTAssertEqual(error as? BoardError, BoardError.GameOver)
+        #expect(throws: BoardError.GameOver) {
+            try board.updateCurrentBoardBlock(BoardBlock(blockShape: blockShape, blockRotation: .clockwise0, x: 0, y: -3))
         }
 
-        XCTAssertThrowsError(try board.commitCurrentBoardBlock()) { error in
-            XCTAssertEqual(error as? BoardError, BoardError.GameOver)
+        #expect(throws: BoardError.GameOver) {
+            try board.commitCurrentBoardBlock()
         }
     }
 
